@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Logging;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -12,21 +13,25 @@ namespace PresetLoadExceptionSkip
     //[BepInProcess("COM3D2x64.exe")]
     public class PresetLoadExceptionSkip : BaseUnityPlugin
     {
+        static ManualLogSource log;
+
         public void Awake()
         {
             Harmony.CreateAndPatchAll(typeof(PresetLoadExceptionSkip));
+            log = Logger;
         }
 
         [HarmonyPatch(typeof(CharacterMgr), "PresetLoad", new Type[] { typeof(BinaryReader), typeof(string) })]
         [HarmonyFinalizer]
-        public static void PresetLoadPostfix(ref Exception __exception)
-        // public CharacterMgr.Preset PresetLoad(BinaryReader brRead, string f_strFileName)
+        public static void PresetLoadPostfix(ref Exception __exception, string f_strFileName)
         {
             if (__exception == null)
             {
                 return;
             }
             __exception = null;
+
+            log.LogWarning("Preset Load error file: " + f_strFileName);
         }
     }
 }
