@@ -21,6 +21,15 @@ namespace PresetLoadExceptionSkip
             log = Logger;
         }
 
+        static string preset;//= Environment.CurrentDirectory + @"\preset\";
+        static string error;//= Environment.CurrentDirectory + @"\preset\ERROR\";
+
+        public void Start()
+        {
+            preset = Environment.CurrentDirectory + @"\preset\";
+            error = Environment.CurrentDirectory + @"\preset\ERROR\";
+        }
+
         [HarmonyPatch(typeof(CharacterMgr), "PresetLoad", new Type[] { typeof(BinaryReader), typeof(string) })]
         [HarmonyFinalizer]
         public static void PresetLoadPostfix(ref Exception __exception, string f_strFileName)
@@ -31,7 +40,13 @@ namespace PresetLoadExceptionSkip
             }
             __exception = null;
 
-            log.LogWarning("Preset Load error file: " + f_strFileName);
+            log.LogWarning("Preset Load error file : " + f_strFileName);
+
+            if (!Directory.Exists(error) )
+            {
+                Directory.CreateDirectory(error);
+            }
+            File.Move(preset+f_strFileName, error+ f_strFileName);
         }
     }
 }
